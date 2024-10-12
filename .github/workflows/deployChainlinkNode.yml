@@ -29,8 +29,8 @@ jobs:
           sed -i 's/{{POSTGRESPASSWORD}}/'"$POSTGRESPASSWORD"'/g' playbooks/setUpChainlinkNode.yml
           sed -i 's/{{CHAINLINKKEYSTOREPASSWORD}}/'"$CHAINLINKKEYSTOREPASSWORD"'/g' playbooks/setUpChainlinkNode.yml
           sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/setUpChainlinkNode.yml
-          sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' playbooks/isntallGrafana.yml
-          sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' playbooks/isntallGrafana.yml
+          sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' playbooks/installGrafana.yml
+          sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' playbooks/installGrafana.yml
 
       - name: Install Ansible
         run: |
