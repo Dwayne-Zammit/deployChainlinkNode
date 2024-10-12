@@ -1,0 +1,106 @@
+---
+- name: Setup Chainlink Node on Ubuntu Server
+  hosts: servers
+  become: yes
+  tasks:
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: Start Docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Docker Compose
+      ansible.builtin.apt:
+        name: docker-compose
+        state: present
+
+    - name: Add current user to Docker group
+      ansible.builtin.user:
+        name: "{{ lookup('env', 'USER') }}"
+        groups: docker
+        append: yes
+
+    # Run the PostgreSQL container for Chainlink
+    - name: Run Postgres container
+      ansible.builtin.docker_container:
+        name: cl-postgres
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: {{POSTGRESPASSWORD}}
+        published_ports:
+          - "5432:5432"
+        state: started
+
+    # Create the Chainlink configuration directory and files
+    - name: Create Chainlink config directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible"
+        state: directory
+        mode: '0755'
+
+    - name: Create config.toml for Chainlink
+      ansible.builtin.copy:
+        dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/config.toml"
+        content: |
+          [Log]
+          Level = 'warn'
+
+          [WebServer]
+          AllowOrigins = '*'
+          SecureCookies = false
+
+          [WebServer.TLS]
+          HTTPSPort = 0
+
+          [[EVM]]
+          ChainID = '11155111'
+
+          [[EVM.Nodes]]
+          Name = 'Sepolia'
+          WSURL = 'wss://eth-sepolia.g.alchemy.com/v2/{{ALCHEMYAPPAPIKEY}}'
+          HTTPURL = 'https://eth-sepolia.g.alchemy.com/v2/{{ALCHEMYAPPAPIKEY}}'
+
+    - name: Create secrets.toml for Chainlink
+      ansible.builtin.copy:
+        dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/secrets.toml"
+        content: |
+          [Password]
+          Keystore = '{{CHAINLINKKEYSTOREPASSWORD}}'
+
+          [Database]
+          URL = 'postgresql://postgres:{{POSTGRESPASSWORD}}@host.docker.internal:5432/postgres?sslmode=disable'
+
+    - name: Create .api credentials for Chainlink
+      ansible.builtin.copy:
+        dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/.api"
+        content: |
+          test@gmail.com
+          {{ALCHEMYAPPAPIKEY}}
+        mode: '0600'
+
+    # if container exists ignore errors
+    - name: Run Chainlink node Docker container with custom command
+      ansible.builtin.shell: |
+        sudo chmod 644 ~/.chainlink-sepolia-ansible/.api && \
+        cd ~/.chainlink-sepolia-ansible && \
+        sudo docker run --platform linux/x86_64/v8 \
+          --name chainlink \
+          -v ~/.chainlink-sepolia-ansible:/chainlink \
+          -d \
+          -p 6688:6688 \
+          --add-host=host.docker.internal:host-gateway \
+          smartcontract/chainlink:2.16.0 \
+          node -config /chainlink/config.toml \
+          -secrets /chainlink/secrets.toml \
+          start -a /chainlink/.api
+      become: yes
+      ignore_errors: yes

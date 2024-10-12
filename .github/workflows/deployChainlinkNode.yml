@@ -1,0 +1,57 @@
+name: Deploy CDK App Kubernetes
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Replace variables
+        env:
+          SERVERUSER: ${{ secrets.SERVER_USER }}
+          SERVEPASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          POSTGRESPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          CHAINLINKKEYSTOREPASSWORD: ${{ secrets.CHAINLINK_KEYSTORE_PASSWORD }}
+          ALCHEMYAPPAPIKEY: ${{ secrets.ALCHEMY_APP_API_KEY }}
+          GRAFANAADMINUSER: ${{ secrets.GRAFANA_ADMIN_USER }}
+          GRAFANAADMINPASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+        run: |
+          sed -i 's/{{SERVERUSER}}/'"$SERVERUSER"'/g' ../../ansible/hosts.ini
+          sed -i 's/{{SERVERPASSWORD}}/'"$SERVERPASSWORD"'/g' ../../ansible/hosts.ini
+          sed -i 's/{{POSTGRESPASSWORD}}/'"$POSTGRESPASSWORD"'/g' ../../ansible/playbooks/setUpChainlinkNode.yml
+          sed -i 's/{{CHAINLINKKEYSTOREPASSWORD}}/'"$CHAINLINKKEYSTOREPASSWORD"'/g' ../../ansible/playbooks/setUpChainlinkNode.yml
+          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' ../../ansible/playbooks/setUpChainlinkNode.yml
+          sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' ../../ansible/playbooks/isntallGrafana.yml
+          sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' ../../ansible/playbooks/isntallGrafana.yml
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Run Ansible Playbook setUpChainlinkNode
+        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/setupChainlinkNode.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+
+      - name: Run Ansible Playbook installNodeExporter
+        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/installNodeExporter.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+
+      - name: Run Ansible Playbook installPrometheus
+        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/installPrometheus.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+
+      - name: Run Ansible Playbook installGrafana
+        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/installGrafana.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"

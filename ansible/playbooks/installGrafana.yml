@@ -1,0 +1,91 @@
+---
+- name: Install Grafana and create Prometheus datasource
+  hosts: servers
+  become: true
+  vars:
+    grafana_url: "http://localhost:3000"
+    grafana_admin_user: "{{GRAFANAADMINUSER}}"
+    grafana_admin_password: "{{GRAFANAADMINPASSWORD}}"
+    datasource_name: "prometheus" 
+
+  tasks:
+    - name: Install prerequisite packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - software-properties-common
+          - wget
+        state: present
+        update_cache: yes
+
+    - name: Create GPG key directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/
+        state: directory
+        mode: '0755'
+
+    - name: Import Grafana GPG key
+      ansible.builtin.shell: |
+        wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
+      args:
+        executable: /bin/bash
+
+    - name: Add Grafana stable repository
+      ansible.builtin.shell: |
+        echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | tee -a /etc/apt/sources.list.d/grafana.list
+      args:
+        executable: /bin/bash
+
+    - name: Update the APT package list
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Grafana OSS
+      ansible.builtin.apt:
+        name: grafana
+        state: present
+
+    - name: Start Grafana service
+      ansible.builtin.systemd:
+        name: grafana-server
+        state: started
+        enabled: yes
+
+    - name: Wait for Grafana to start
+      ansible.builtin.wait_for:
+        port: 3000
+        delay: 10
+        timeout: 60
+
+    - name: Check if the Prometheus datasource exists
+      uri:
+        url: "{{ grafana_url }}/api/datasources/name/{{ datasource_name }}"
+        method: GET
+        user: "{{ grafana_admin_user }}"
+        password: "{{ grafana_admin_password }}"
+        force_basic_auth: yes
+        status_code: 200  # Expecting a 200 OK response if it exists
+      register: datasource_check
+      ignore_errors: yes
+
+    - name: Create Prometheus datasource in Grafana
+      uri:
+        url: "{{ grafana_url }}/api/datasources"
+        method: POST
+        user: "{{ grafana_admin_user }}"
+        password: "{{ grafana_admin_password }}"
+        force_basic_auth: yes
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {
+            "name": "{{ datasource_name }}",
+            "type": "prometheus",
+            "url": "http://localhost:9090",
+            "access": "proxy",
+            "basicAuth": false
+          }
+        body_format: json
+        status_code: 200
+      when: datasource_check.status != 200
+      register: grafana_datasource_response

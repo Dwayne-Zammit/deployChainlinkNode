@@ -1,0 +1,46 @@
+---
+- name: Install Node Exporter on Ubuntu using Docker
+  hosts: servers
+  become: true
+  tasks:
+
+    - name: Update the apt package manager
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create Docker network
+      community.docker.docker_network:
+        name: prometheus_network
+        state: present
+
+    - name: Pull Node Exporter Docker image
+      docker_image:
+        name: prom/node-exporter
+        tag: latest
+        source: pull
+
+    - name: Create Node Exporter container
+      docker_container:
+        name: node_exporter
+        image: prom/node-exporter:latest
+        state: started
+        restart_policy: always
+        networks:
+          - name: prometheus_network
+        published_ports:
+          - "9100:9100"
+        command: "--web.listen-address=0.0.0.0:9100"
+      register: node_exporter_container
