@@ -37,27 +37,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible
 
-
       - name: Run Ansible Playbook setUpChainlinkNode
         run: |
-          cd ansible && ansible-playbook -i hosts.ini playbooks/setupChainlinkNode.yml
+          cd ansible/playbooks && ansible-playbook -i ../hosts.ini setupChainlinkNode.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installNodeExporter
         run: |
-          cd ansible && ansible-playbook -i hosts.ini playbooks/installNodeExporter.yml
+          cd ansible/playbooks && ansible-playbook -i ../hosts.ini installNodeExporter.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installPrometheus
         run: |
-          cd ansible && ansible-playbook -i hosts.ini playbooks/installPrometheus.yml
+          cd ansible/playbooks && ansible-playbook -i ../hosts.ini installPrometheus.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installGrafana
         run: |
-          cd ansible && ansible-playbook -i hosts.ini playbooks/installGrafana.yml
+          cd ansible/playbooks && ansible-playbook -i ../hosts.ini installGrafana.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
