@@ -1,2 +1,2 @@
 # deployChainlinkNode
-Deploy chainlink node along with creating contract, grafana/prometheus/nodeExporter monitoring
+Deploy chainlink node along with creating contract, grafana/prometheus/nodeExporter monitoring.
