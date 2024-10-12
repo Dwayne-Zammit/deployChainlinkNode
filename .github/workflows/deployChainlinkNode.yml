@@ -42,21 +42,21 @@ jobs:
 
 
       - name: Run Ansible Playbook setUpChainlinkNode
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/setupChainlinkNode.yml
+        run: ansible-playbook -i ansible/hosts.ini /home/runner/work/deployChainlinkNode/deployChainlinkNode/ansible/playbooks/setupChainlinkNode.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installNodeExporter
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
+        run: ansible-playbook -i ansible/hosts.ini /home/runner/work/deployChainlinkNode/deployChainlinkNode/ansible/playbooks/installNodeExporter.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installPrometheus
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installPrometheus.yml
+        run: ansible-playbook -i ansible/hosts.ini /home/runner/work/deployChainlinkNode/deployChainlinkNode/ansible/playbooks/installPrometheus.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installGrafana
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installGrafana.yml
+        run: ansible-playbook -i ansible/hosts.ini /home/runner/work/deployChainlinkNode/deployChainlinkNode/ansible/playbooks/installGrafana.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
