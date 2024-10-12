@@ -23,13 +23,13 @@ jobs:
           GRAFANAADMINUSER: ${{ secrets.GRAFANA_ADMIN_USER }}
           GRAFANAADMINPASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
         run: |
-          sed -i 's/{{SERVERUSER}}/'"$SERVERUSER"'/g' ../../ansible/hosts.ini
-          sed -i 's/{{SERVERPASSWORD}}/'"$SERVERPASSWORD"'/g' ../../ansible/hosts.ini
-          sed -i 's/{{POSTGRESPASSWORD}}/'"$POSTGRESPASSWORD"'/g' ../../ansible/playbooks/setUpChainlinkNode.yml
-          sed -i 's/{{CHAINLINKKEYSTOREPASSWORD}}/'"$CHAINLINKKEYSTOREPASSWORD"'/g' ../../ansible/playbooks/setUpChainlinkNode.yml
-          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' ../../ansible/playbooks/setUpChainlinkNode.yml
-          sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' ../../ansible/playbooks/isntallGrafana.yml
-          sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' ../../ansible/playbooks/isntallGrafana.yml
+          sed -i 's/{{SERVERUSER}}/'"$SERVERUSER"'/g' ansible/hosts.ini
+          sed -i 's/{{SERVERPASSWORD}}/'"$SERVERPASSWORD"'/g' ansible/hosts.ini
+          sed -i 's/{{POSTGRESPASSWORD}}/'"$POSTGRESPASSWORD"'/g' ansible/playbooks/setUpChainlinkNode.yml
+          sed -i 's/{{CHAINLINKKEYSTOREPASSWORD}}/'"$CHAINLINKKEYSTOREPASSWORD"'/g' ansible/playbooks/setUpChainlinkNode.yml
+          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' ansible/playbooks/setUpChainlinkNode.yml
+          sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' ansible/playbooks/isntallGrafana.yml
+          sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' ansible/playbooks/isntallGrafana.yml
 
       - name: Install Ansible
         run: |
@@ -37,21 +37,21 @@ jobs:
           pip install ansible
 
       - name: Run Ansible Playbook setUpChainlinkNode
-        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/setupChainlinkNode.yml
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/setupChainlinkNode.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installNodeExporter
-        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/installNodeExporter.yml
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installPrometheus
-        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/installPrometheus.yml
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installPrometheus.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
       - name: Run Ansible Playbook installGrafana
-        run: ansible-playbook -i ../../ansible/hosts.ini ../../ansible/playbooks/installGrafana.yml
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installGrafana.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
