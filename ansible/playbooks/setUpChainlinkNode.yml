@@ -18,11 +18,6 @@
         state: started
         enabled: yes
 
-    - name: Install Docker Compose
-      ansible.builtin.apt:
-        name: docker-compose
-        state: present
-
     - name: Add current user to Docker group
       ansible.builtin.user:
         name: "{{ lookup('env', 'USER') }}"
