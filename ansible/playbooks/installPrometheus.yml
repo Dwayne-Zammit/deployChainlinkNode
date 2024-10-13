@@ -42,10 +42,10 @@
           scrape_configs:
             - job_name: 'prometheus'
               static_configs:
-                - targets: ['localhost:9090']  # Adjusted to localhost
+                - targets: ['localhost:9090']
             - job_name: 'node-exporter'
               static_configs:
-                - targets: ['node_exporter:9100']  # Reference to the Node Exporter in the same network
+                - targets: ['node_exporter:9100']
         mode: '0644'
 
     - name: Create Prometheus alert rules file
@@ -86,12 +86,12 @@
         image: prom/prometheus:latest
         state: started
         restart_policy: always
-        networks:
-          - name: prometheus_network  # Use the created network
+        published_ports:
+          - "9090:9090"
+        command: "--config.file=/etc/prometheus/prometheus.yml"
         volumes:
           - /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-          - /etc/prometheus/rules.yml:/etc/prometheus/rules.yml  # Mount the rules file
-        command: "--config.file=/etc/prometheus/prometheus.yml"
+          - /etc/prometheus/rules.yml:/etc/prometheus/rules.yml
       register: prometheus_container
       become: yes
 
