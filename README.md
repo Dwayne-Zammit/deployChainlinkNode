@@ -44,7 +44,7 @@ In a complementary Grafana playbook, we create a Grafana data source via API con
 
 ### Importing Dashboards
 
-You can import the following dashboard from the Grafana Marketplace to visualize metrics collected by the Node Exporter:
+One can import the following dashboard from the Grafana Marketplace to visualize metrics collected by the Node Exporter:
 
 - [Node Exporter Full Dashboard](https://grafana.com/grafana/dashboards/1860-node-exporter-full/)
 

@@ -19,6 +19,11 @@
         state: started
         enabled: yes
 
+    - name: Create Docker network
+      community.docker.docker_network:
+        name: prometheus_network
+        state: present
+
     - name: Create Prometheus configuration directory
       file:
         path: /etc/prometheus
@@ -40,7 +45,7 @@
                 - targets: ['localhost:9090']  # Adjusted to localhost
             - job_name: 'node-exporter'
               static_configs:
-                - targets: ['node_exporter:9100']    
+                - targets: ['node_exporter:9100']  # Reference to the Node Exporter in the same network
         mode: '0644'
 
     - name: Create Prometheus alert rules file
@@ -81,7 +86,8 @@
         image: prom/prometheus:latest
         state: started
         restart_policy: always
-        network_mode: host
+        networks:
+          - name: prometheus_network  # Use the created network
         volumes:
           - /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
           - /etc/prometheus/rules.yml:/etc/prometheus/rules.yml  # Mount the rules file
