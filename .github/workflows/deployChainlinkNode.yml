@@ -26,6 +26,7 @@ jobs:
           cd ansible
           sed -i 's/{{SERVERUSER}}/'"$SERVERUSER"'/g' hosts.ini
           sed -i 's/{{SERVERPASSWORD}}/'"$SERVERPASSWORD"'/g' hosts.ini
+          cat hosts.ini
           sed -i 's/{{POSTGRESPASSWORD}}/'"$POSTGRESPASSWORD"'/g' playbooks/setUpChainlinkNode.yml
           sed -i 's/{{CHAINLINKKEYSTOREPASSWORD}}/'"$CHAINLINKKEYSTOREPASSWORD"'/g' playbooks/setUpChainlinkNode.yml
           sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/setUpChainlinkNode.yml
