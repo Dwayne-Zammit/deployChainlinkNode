@@ -87,7 +87,7 @@
         state: started
         restart_policy: always
         networks:
-          - name: prometheus_network  # Ensure it is in the same network
+          - name: prometheus_network
         published_ports:
           - "9090:9090"
         command: "--config.file=/etc/prometheus/prometheus.yml"
