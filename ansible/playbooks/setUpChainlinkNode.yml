@@ -100,7 +100,7 @@
     - name: Wait for Chainlink container to become healthy
       ansible.builtin.shell: |
         for i in {1..8}; do
-          if [ "$(docker inspect --format='{{.State.Health.Status}}' chainlink)" == "healthy" ]; then
+          if [ "$(docker inspect --format='{{'{{'}}.State.Health.Status{{'}}'}}' chainlink)" == "healthy" ]; then
             echo "Chainlink container is healthy"
             exit 0
           else
@@ -114,6 +114,7 @@
       failed_when: chainlink_health_check.rc != 0
       retries: 1
       delay: 1
+
 
     # Get Chainlink authentication token
     - name: Get Chainlink authentication token
