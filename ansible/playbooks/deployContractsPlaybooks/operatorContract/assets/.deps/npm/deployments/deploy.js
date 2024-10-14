@@ -13,9 +13,16 @@ async function main() {
   const linkAddress = "0x779877A7B0D9E8603169DdbD7836e478b4624789"; // LINK token address
   const ownerAddress = deployer.address; // Owner address
 
-  // Compile and deploy the contract
+  // Get current gas price (you could adjust this to be lower)
+  const gasPrice = await ethers.provider.getGasPrice();
+  const lowerGasPrice = gasPrice.mul(90).div(100); // Set to 90% of current gas price
+
+  // Compile and deploy the contract with custom gas settings
   const ContractFactory = await ethers.getContractFactory("Operator"); // Ensure this matches your contract name
-  const contract = await ContractFactory.deploy(linkAddress, ownerAddress);
+  const contract = await ContractFactory.deploy(linkAddress, ownerAddress, {
+    gasPrice: lowerGasPrice, // Set gas price
+    gasLimit: 3000000, // Set a reasonable gas limit (adjust if necessary)
+  });
 
   await contract.deployed();
   console.log("Contract deployed to:", contract.address);
@@ -58,8 +65,11 @@ echo "OPERATOR_CONTRACT_ADDRESS set to ${contract.address}"
   const nodeAddresses = [nodeAddress];
   console.log("Attempting to whitelist node:", nodeAddress);
 
-  // Call the setAuthorizedSenders function to whitelist the node
-  const tx = await operatorContract.setAuthorizedSenders(nodeAddresses);
+  // Call the setAuthorizedSenders function to whitelist the node with custom gas settings
+  const tx = await operatorContract.setAuthorizedSenders(nodeAddresses, {
+    gasPrice: lowerGasPrice, // Set gas price
+    gasLimit: 3000000, // Set a reasonable gas limit
+  });
   console.log("Transaction sent, waiting for confirmation...", tx.hash);
 
   // Wait for the transaction to be confirmed on the blockchain
