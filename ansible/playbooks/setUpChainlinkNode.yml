@@ -104,7 +104,7 @@
         method: POST
         body_format: json
         body:
-          email: "test@gmail.com"
+          email: "test-api@gmail.com"
           password: "{{CHAINLINKNODEPASSWORD}}"
         return_content: yes
         status_code: 200
