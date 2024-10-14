@@ -104,7 +104,6 @@
         timeout: 40
         state: started
  
-    # Get Chainlink authentication session
     - name: Get Chainlink authentication session
       ansible.builtin.uri:
         url: http://localhost:6688/sessions
@@ -119,17 +118,10 @@
           Content-Type: "application/json"
       register: auth_response
 
-    # Debug the authentication response
-    - name: Debug authentication response
-      ansible.builtin.debug:
-        var: auth_response
-
-    # Extract the session cookie
     - name: Set session cookie as a fact
       ansible.builtin.set_fact:
         chainlink_session_cookie: "{{ auth_response.cookies.clsession }}"
 
-    # Fetch the wallet address using the API with the session cookie
     - name: Get Chainlink node wallet address
       ansible.builtin.uri:
         url: http://localhost:6688/v2/keys/eth
@@ -139,17 +131,21 @@
         return_content: yes
       register: wallet_address_response
 
-    # Debug the wallet address response
     - name: Debug wallet address response
       ansible.builtin.debug:
         var: wallet_address_response
 
-    # Store Chainlink wallet address
     - name: Store Chainlink wallet address
       ansible.builtin.set_fact:
         chainlink_wallet_address: "{{ wallet_address_response.json.data[0].attributes.address }}"
 
-    # Echo Chainlink wallet address
+    - name: Export Chainlink wallet address as an environment variable
+      ansible.builtin.shell: |
+        echo "export CHAINLINK_NODE_ADDRESS='{{ chainlink_wallet_address }}'" >> /etc/profile.d/chainlink_env.sh
+        source /etc/profile.d/chainlink_env.sh
+      args:
+        executable: /bin/bash
+
     - name: Echo Chainlink wallet address
       ansible.builtin.debug:
         msg: "Chainlink Node Wallet Address: {{ chainlink_wallet_address }}"
