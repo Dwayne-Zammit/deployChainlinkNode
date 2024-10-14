@@ -58,27 +58,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible
 
-      # - name: Run Ansible Playbook setUpChainlinkNode
-      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/setUpChainlinkNode.yml
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
-
-      - name: Run Ansible Playbook
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/deployContractsPlaybooks/operatorContract/setupOperatorContract.yml
+      - name: Run Ansible Playbook setUpChainlinkNode
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/setUpChainlinkNode.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      # - name: Run Ansible Playbook installNodeExporter
-      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
+      - name: Run Ansible Playbook installNodeExporter
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      # - name: Run Ansible Playbook installPrometheus
-      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installPrometheus.yml
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
+      - name: Run Ansible Playbook installPrometheus
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installPrometheus.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      # - name: Run Ansible Playbook installGrafana
-      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installGrafana.yml
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
+      - name: Run Ansible Playbook installGrafana
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installGrafana.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
