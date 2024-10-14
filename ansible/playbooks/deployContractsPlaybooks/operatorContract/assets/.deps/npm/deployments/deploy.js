@@ -13,37 +13,48 @@ async function main() {
   const linkAddress = "0x779877A7B0D9E8603169DdbD7836e478b4624789"; // LINK token address
   const ownerAddress = deployer.address; // Owner address
 
-  // Get current gas price (you could adjust this to be lower)
-  const gasPrice = await ethers.provider.getGasPrice();
-  const lowerGasPrice = gasPrice.mul(90).div(100); // Set to 90% of current gas price
-
-  // Compile and deploy the contract with custom gas settings
+  // Compile and deploy the contract
   const ContractFactory = await ethers.getContractFactory("Operator"); // Ensure this matches your contract name
-  const contract = await ContractFactory.deploy(linkAddress, ownerAddress, {
-    gasPrice: lowerGasPrice, // Set gas price
-    gasLimit: 3000000, // Set a reasonable gas limit (adjust if necessary)
-  });
+  const contract = await ContractFactory.deploy(linkAddress, ownerAddress);
 
   await contract.deployed();
   console.log("Contract deployed to:", contract.address);
 
-  // Create a script to export the operator contract address
-  const exportScriptPath = "/tmp/set_operator_contract.sh";
-  const exportScriptContent = `#!/bin/bash
-export OPERATOR_CONTRACT_ADDRESS=${contract.address}
-echo "OPERATOR_CONTRACT_ADDRESS set to ${contract.address}"
-`;
+  // Store the contract address in the .env file
+  const envFilePath =
+    "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/requestEthereumPriceContract/assets/.deps/npm/.env";
+  const newEnvVariable = `OPERATOR_CONTRACT_ADDRESS=${contract.address}\n`;
 
-  fs.writeFileSync(exportScriptPath, exportScriptContent, { mode: 0o775 });
-  console.log(
-    `Created script to set OPERATOR_CONTRACT_ADDRESS: ${exportScriptPath}`
-  );
+  // Read existing .env file
+  fs.readFile(envFilePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading .env file:", err);
+      return;
+    }
 
-  // Inform the user how to source the script
-  console.log(
-    `Run the following command to set the variable in the current shell session:`
-  );
-  console.log(`source ${exportScriptPath}`);
+    // Check if the variable already exists
+    if (data.includes("OPERATOR_CONTRACT_ADDRESS=")) {
+      const newData = data.replace(
+        /OPERATOR_CONTRACT_ADDRESS=.*/g,
+        newEnvVariable
+      );
+      fs.writeFile(envFilePath, newData, (err) => {
+        if (err) {
+          console.error("Error writing to .env file:", err);
+        } else {
+          console.log("Updated OPERATOR_CONTRACT_ADDRESS in .env file");
+        }
+      });
+    } else {
+      fs.appendFile(envFilePath, newEnvVariable, (err) => {
+        if (err) {
+          console.error("Error appending to .env file:", err);
+        } else {
+          console.log("Added OPERATOR_CONTRACT_ADDRESS to .env file");
+        }
+      });
+    }
+  });
 
   // Now proceed to whitelist the node in the same script
   const nodeAddress = process.env.CHAINLINK_NODE_ADDRESS; // Fetching from environment variables
@@ -65,11 +76,8 @@ echo "OPERATOR_CONTRACT_ADDRESS set to ${contract.address}"
   const nodeAddresses = [nodeAddress];
   console.log("Attempting to whitelist node:", nodeAddress);
 
-  // Call the setAuthorizedSenders function to whitelist the node with custom gas settings
-  const tx = await operatorContract.setAuthorizedSenders(nodeAddresses, {
-    gasPrice: lowerGasPrice, // Set gas price
-    gasLimit: 10000, // Set a reasonable gas limit
-  });
+  // Call the setAuthorizedSenders function to whitelist the node
+  const tx = await operatorContract.setAuthorizedSenders(nodeAddresses);
   console.log("Transaction sent, waiting for confirmation...", tx.hash);
 
   // Wait for the transaction to be confirmed on the blockchain
