@@ -100,23 +100,21 @@
     - name: Wait for Chainlink container to become healthy
       ansible.builtin.shell: |
         for i in {1..8}; do
-          if [ "$(docker inspect --format='{{'{{'}}.State.Health.Status{{'}}'}}' chainlink)" == "healthy" ]; then
-            echo "Chainlink container is healthy"
+          response=$(curl --silent --write-out "%{http_code}" --output /dev/null http://localhost:6688/v2/health)
+          if [ "$response" == "200" ]; then
+            echo "Chainlink service is healthy (HTTP 200)"
             exit 0
           else
-            echo "Waiting for Chainlink container to become healthy..."
+            echo "Waiting for Chainlink service to become healthy... (HTTP status: $response)"
             sleep 5
           fi
         done
+        echo "Chainlink service did not become healthy in time"
         exit 1
       become: yes
       register: chainlink_health_check
       failed_when: chainlink_health_check.rc != 0
-      retries: 1
-      delay: 1
-
-
-    # Get Chainlink authentication token
+        # Get Chainlink authentication token
     - name: Get Chainlink authentication token
       ansible.builtin.uri:
         url: http://localhost:6688/sessions
