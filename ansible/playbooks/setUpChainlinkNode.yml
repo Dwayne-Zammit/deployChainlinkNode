@@ -76,7 +76,7 @@
       ansible.builtin.copy:
         dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/.api"
         content: |
-          test@gmail.com
+          test
           {{CHAINLINKNODEPASSWORD}}
         mode: '0600'
 
