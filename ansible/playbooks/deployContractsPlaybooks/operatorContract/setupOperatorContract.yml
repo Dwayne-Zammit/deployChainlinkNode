@@ -42,6 +42,14 @@
         state: present
       when: npm_check.rc != 0  # Only install if npm isn't installed
 
+    - name: Check Node.js version
+      ansible.builtin.command: node --version
+      register: node_version
+
+    - name: Display Node.js version
+      ansible.builtin.debug:
+        msg: "Node.js version: {{ node_version.stdout }}"
+        
     - name: Install Hardhat
       ansible.builtin.command: npm install --save-dev hardhat
       args:
