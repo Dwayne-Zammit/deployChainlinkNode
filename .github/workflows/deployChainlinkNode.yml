@@ -22,6 +22,8 @@ jobs:
           ALCHEMYAPPAPIKEY: ${{ secrets.ALCHEMY_APP_API_KEY }}
           GRAFANAADMINUSER: ${{ secrets.GRAFANA_ADMIN_USER }}
           GRAFANAADMINPASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          ADMINWALLETPRIVATEKEY: ${{ secrets.ADMIN_WALLET_PRIVATE_KEY }}
+          ETHERSCANAPIKEY: ${{ secrets.ETHERSCAN_API_KEY }}
         run: |
           cd ansible
           sed -i 's/{{SERVERUSER}}/'"$SERVERUSER"'/g' hosts.ini
@@ -32,29 +34,51 @@ jobs:
           sed -i 's/{{CHAINLINKNODEPASSWORD}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/setUpChainlinkNode.yml
           sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' playbooks/installGrafana.yml
           sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' playbooks/installGrafana.yml
+          
+          # substitute .env for operator contract
+          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
+          sed -i 's/{{ADMINWALLETPRIVATEKEY}}/'"$ADMINWALLETPRIVATEKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
+          sed -i 's/{{ETHERSCANAPIKEY}}/'"$ETHERSCANAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
+
+          # substitute .env for requestEthereumPrice contract
+          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/deployContractsPlaybooks/requestEthereumPriceContract/assets/.deps/npm/.env
+          sed -i 's/{{ADMINWALLETPRIVATEKEY}}/'"$ADMINWALLETPRIVATEKEY"'/g' playbooks/deployContractsPlaybooks/requestEthereumPriceContract/assets/.deps/npm/.env
+
+      - name: Deploy Assets
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: "50.21.167.131"
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "ansible/playbooks/deployContractsPlaybooks"
+          target: "/tmp/ChainlinkContractsAssets"
 
       - name: Install Ansible
         run: |
           python -m pip install --upgrade pip
           pip install ansible
 
+      # - name: Run Ansible Playbook setUpChainlinkNode
+      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/setUpChainlinkNode.yml
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      - name: Run Ansible Playbook setUpChainlinkNode
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/setUpChainlinkNode.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
+      # - name: Run Ansible Playbook
+      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/deployContractsPlaybooks/operatorContract/setupOperatorContract.yml
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      - name: Run Ansible Playbook installNodeExporter
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
+      # - name: Run Ansible Playbook installNodeExporter
+      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      - name: Run Ansible Playbook installPrometheus
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installPrometheus.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
+      # - name: Run Ansible Playbook installPrometheus
+      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installPrometheus.yml
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      - name: Run Ansible Playbook installGrafana
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installGrafana.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
+      # - name: Run Ansible Playbook installGrafana
+      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installGrafana.yml
+      #   env:
+      #     ANSIBLE_HOST_KEY_CHECKING: "False"
