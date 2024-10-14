@@ -68,7 +68,7 @@ echo "OPERATOR_CONTRACT_ADDRESS set to ${contract.address}"
   // Call the setAuthorizedSenders function to whitelist the node with custom gas settings
   const tx = await operatorContract.setAuthorizedSenders(nodeAddresses, {
     gasPrice: lowerGasPrice, // Set gas price
-    gasLimit: 1000000, // Set a reasonable gas limit
+    gasLimit: 10000, // Set a reasonable gas limit
   });
   console.log("Transaction sent, waiting for confirmation...", tx.hash);
 
