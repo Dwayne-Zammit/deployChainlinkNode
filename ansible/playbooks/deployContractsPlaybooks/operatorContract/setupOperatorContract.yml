@@ -1,79 +1,27 @@
 ---
-- name: Setup Operator Contract
+- name: Setup and Run Operator Contract Deployment Script
   hosts: servers  # Replace with your inventory group or specific hosts
   become: yes  # Use sudo if needed
   tasks:
-    - name: Install required dependencies
-      ansible.builtin.apt:
-        name:
-          - curl
-          - build-essential
-        state: present
+    - name: Change permissions of the deployment script
+      ansible.builtin.file:
+        path: /tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/deploy_operator_contract.sh
+        mode: '0775'  # Set permissions to 775
 
-    - name: Install NVM
-      ansible.builtin.shell: |
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-      args:
-        creates: ~/.nvm
+    - name: Run the deployment script
+      ansible.builtin.command: /tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/deploy_operator_contract.sh
+      register: deployment_result
 
-    - name: Load NVM
-      ansible.builtin.shell: |
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-      register: nvm_load
-      changed_when: false  # No need to mark this task as changed
-
-    - name: Install Node.js 20.18.0
-      ansible.builtin.shell: |
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        nvm install 20.18.0  # Install specific version
-      args:
-        executable: /bin/bash
-
-    - name: Navigate to the project directory
-      ansible.builtin.command: pwd
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-      register: pwd_output
-
-    - name: Display current directory
+    - name: Display deployment output
       ansible.builtin.debug:
-        msg: "Current directory is {{ pwd_output.stdout }}"
+        var: deployment_result.stdout_lines
 
-    - name: Check Node.js version
-      ansible.builtin.command: node --version
-      register: node_version
-
-    - name: Display Node.js version
+    - name: Display any errors during deployment
       ansible.builtin.debug:
-        msg: "Node.js version: {{ node_version.stdout }}"
+        var: deployment_result.stderr_lines
+      when: deployment_result.stderr | length > 0
 
-    - name: Install Hardhat
-      ansible.builtin.command: npm install --save-dev hardhat
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Install dotenv
-      ansible.builtin.command: npm install dotenv --save
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Install Hardhat Ethers
-      ansible.builtin.command: npm install --save-dev @nomiclabs/hardhat-ethers "ethers@^5.0.0"
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Install Chainlink contracts
-      ansible.builtin.command: npm install @chainlink/contracts
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Deploy the Operator contract
-      ansible.builtin.command: npx hardhat run deployments/deploy.js --network sepolia
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Deployment complete message
-      ansible.builtin.debug:
-        msg: "Deployment of the Operator contract completed successfully."
+    - name: Check exit status of deployment script
+      ansible.builtin.fail:
+        msg: "Deployment script failed with exit code {{ deployment_result.rc }}"
+      when: deployment_result.rc != 0
