@@ -29,7 +29,7 @@
         name: cl-postgres
         image: postgres
         env:
-          POSTGRES_PASSWORD: {{POSTGRESPASSWORD}}
+          POSTGRES_PASSWORD: "{{ POSTGRESPASSWORD }}"
         published_ports:
           - "5432:5432"
         state: started
@@ -59,25 +59,25 @@
 
           [[EVM.Nodes]]
           Name = 'Sepolia'
-          WSURL = 'wss://eth-sepolia.g.alchemy.com/v2/{{ALCHEMYAPPAPIKEY}}'
-          HTTPURL = 'https://eth-sepolia.g.alchemy.com/v2/{{ALCHEMYAPPAPIKEY}}'
+          WSURL = 'wss://eth-sepolia.g.alchemy.com/v2/{{ ALCHEMYAPPAPIKEY }}'
+          HTTPURL = 'https://eth-sepolia.g.alchemy.com/v2/{{ ALCHEMYAPPAPIKEY }}'
 
     - name: Create secrets.toml for Chainlink
       ansible.builtin.copy:
         dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/secrets.toml"
         content: |
           [Password]
-          Keystore = '{{CHAINLINKKEYSTOREPASSWORD}}'
+          Keystore = '{{ CHAINLINKKEYSTOREPASSWORD }}'
 
           [Database]
-          URL = 'postgresql://postgres:{{POSTGRESPASSWORD}}@host.docker.internal:5432/postgres?sslmode=disable'
+          URL = 'postgresql://postgres:{{ POSTGRESPASSWORD }}@host.docker.internal:5432/postgres?sslmode=disable'
 
     - name: Create .api credentials for Chainlink
       ansible.builtin.copy:
         dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/.api"
         content: |
           test-api@gmail.com
-          {{CHAINLINKNODEPASSWORD}}
+          {{ CHAINLINKNODEPASSWORD }}
         mode: '0600'
 
     - name: Run Chainlink node Docker container with custom command
@@ -103,7 +103,7 @@
         delay: 10
         timeout: 40
         state: started
- 
+
     # Get Chainlink authentication session
     - name: Get Chainlink authentication session
       ansible.builtin.uri:
@@ -112,7 +112,7 @@
         body_format: json
         body:
           email: "test-api@gmail.com"
-          password: "{{CHAINLINKNODEPASSWORD}}"
+          password: "{{ CHAINLINKNODEPASSWORD }}"
         return_content: yes
         status_code: 200
         headers:
@@ -124,18 +124,18 @@
       ansible.builtin.debug:
         var: auth_response
 
-    # Set auth token as a fact
-    - name: Set auth token as a fact
+    # Extract the session cookie
+    - name: Set session cookie as a fact
       ansible.builtin.set_fact:
-        chainlink_auth_token: "{{ auth_response.json.data.attributes.token }}"
+        chainlink_session_cookie: "{{ auth_response.cookies.clsession }}"
 
-    # Fetch the wallet address using the API
+    # Fetch the wallet address using the API with the session cookie
     - name: Get Chainlink node wallet address
       ansible.builtin.uri:
         url: http://localhost:6688/v2/keys/eth
         method: GET
         headers:
-          Authorization: "Bearer {{ chainlink_auth_token }}"
+          Cookie: "clsession={{ chainlink_session_cookie }}"
         return_content: yes
       register: wallet_address_response
 
