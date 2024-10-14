@@ -1,0 +1,41 @@
+---
+- name: Deploy Operator Contract
+  hosts: servers
+  become: yes
+  tasks:
+    - name: Ensure npm is installed
+      ansible.builtin.command: 
+        cmd: npm --version
+      register: npm_check
+      ignore_errors: yes
+
+    - name: Install npm if not installed
+      ansible.builtin.apt:
+        name: npm
+        state: present
+      when: npm_check.rc != 0
+
+    - name: Install Hardhat
+      ansible.builtin.command: npm install --save-dev hardhat
+      args:
+        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
+
+    - name: Install dotenv
+      ansible.builtin.command: npm install dotenv --save
+      args:
+        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
+
+    - name: Install Hardhat Ethers
+      ansible.builtin.command: npm install --save-dev @nomiclabs/hardhat-ethers "ethers@^5.0.0"
+      args:
+        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
+
+    - name: Install Chainlink contracts
+      ansible.builtin.command: npm install @chainlink/contracts
+      args:
+        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
+
+    - name: Deploy the Operator contract
+      ansible.builtin.command: npx hardhat run deployments/deploy.js --network sepolia
+      args:
+        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"

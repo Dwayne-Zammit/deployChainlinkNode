@@ -63,10 +63,10 @@ jobs:
       #   env:
       #     ANSIBLE_HOST_KEY_CHECKING: "False"
 
-      # - name: Run Ansible Playbook
-      #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/deployContractsPlaybooks/operatorContract/setupOperatorContract.yml
-      #   env:
-      #     ANSIBLE_HOST_KEY_CHECKING: "False"
+      - name: Run Ansible Playbook
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/deployContractsPlaybooks/operatorContract/setupOperatorContract.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
 
       # - name: Run Ansible Playbook installNodeExporter
       #   run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/installNodeExporter.yml
