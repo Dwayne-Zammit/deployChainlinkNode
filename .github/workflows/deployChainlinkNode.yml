@@ -59,7 +59,7 @@ jobs:
           pip install ansible
 
       - name: Run Ansible Playbook setUpChainlinkNode
-        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/deployContractsPlaybooks/setUpChainlinkNode.yml/
+        run: ansible-playbook -i ansible/hosts.ini ansible/playbooks/deployContractsPlaybooks/setUpChainlinkNode.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
