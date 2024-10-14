@@ -1,11 +1,38 @@
 ---
 - name: Deploy Operator Contract
-  hosts: servers
-  become: yes
+  hosts: servers  # Replace with your inventory group or specific hosts
+  become: yes  # Use sudo if needed
   tasks:
+    - name: Install required dependencies
+      ansible.builtin.apt:
+        name:
+          - curl
+          - build-essential
+        state: present
+
+    - name: Install NVM
+      ansible.builtin.shell: |
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+      args:
+        creates: ~/.nvm
+
+    - name: Load NVM
+      ansible.builtin.shell: |
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      register: nvm_load
+      changed_when: false  # No need to mark this task as changed
+
+    - name: Install Node.js 20.18.0
+      ansible.builtin.shell: |
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install 20.18.0  # Install specific version
+      args:
+        executable: /bin/bash
+
     - name: Ensure npm is installed
-      ansible.builtin.command: 
-        cmd: npm --version
+      ansible.builtin.command: npm --version
       register: npm_check
       ignore_errors: yes
 
@@ -13,7 +40,7 @@
       ansible.builtin.apt:
         name: npm
         state: present
-      when: npm_check.rc != 0
+      when: npm_check.rc != 0  # Only install if npm isn't installed
 
     - name: Install Hardhat
       ansible.builtin.command: npm install --save-dev hardhat
