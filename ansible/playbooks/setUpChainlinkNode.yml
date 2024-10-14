@@ -112,7 +112,7 @@
         body_format: json
         body:
           email: "test@gmail.com"
-          password: "{{ CHAINLINKNODEPASSWORD }}"
+          password: "{{CHAINLINKNODEPASSWORD}}"
         return_content: yes
         status_code: 200
         headers:
