@@ -131,10 +131,6 @@
         return_content: yes
       register: wallet_address_response
 
-    - name: Debug wallet address response
-      ansible.builtin.debug:
-        var: wallet_address_response
-
     - name: Store Chainlink wallet address
       ansible.builtin.set_fact:
         chainlink_wallet_address: "{{ wallet_address_response.json.data[0].attributes.address }}"
