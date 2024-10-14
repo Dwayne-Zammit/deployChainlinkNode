@@ -34,16 +34,7 @@ jobs:
           sed -i 's/{{CHAINLINKNODEPASSWORD}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/setUpChainlinkNode.yml
           sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' playbooks/installGrafana.yml
           sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' playbooks/installGrafana.yml
-          
-          # substitute .env for operator contract
-          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
-          sed -i 's/{{ADMINWALLETPRIVATEKEY}}/'"$ADMINWALLETPRIVATEKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
-          sed -i 's/{{ETHERSCANAPIKEY}}/'"$ETHERSCANAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
-
-          # substitute .env for requestEthereumPrice contract
-          sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/deployContractsPlaybooks/requestEthereumPriceContract/assets/.deps/npm/.env
-          sed -i 's/{{ADMINWALLETPRIVATEKEY}}/'"$ADMINWALLETPRIVATEKEY"'/g' playbooks/deployContractsPlaybooks/requestEthereumPriceContract/assets/.deps/npm/.env
-
+        
       - name: Deploy Assets
         uses: appleboy/scp-action@v0.1.7
         with:
