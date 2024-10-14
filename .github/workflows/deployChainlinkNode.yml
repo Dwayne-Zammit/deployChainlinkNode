@@ -35,15 +35,6 @@ jobs:
           sed -i 's/{{GRAFANAADMINUSER}}/'"$GRAFANAADMINUSER"'/g' playbooks/installGrafana.yml
           sed -i 's/{{GRAFANAADMINPASSWORD}}/'"$GRAFANAADMINPASSWORD"'/g' playbooks/installGrafana.yml
         
-      - name: Deploy Assets
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: "50.21.167.131"
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          source: "ansible/playbooks/deployContractsPlaybooks"
-          target: "/tmp/ChainlinkContractsAssets"
-
       - name: Install Ansible
         run: |
           python -m pip install --upgrade pip
