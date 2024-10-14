@@ -1,0 +1,27 @@
+---
+- name: Setup and Run Operator Contract Deployment Script
+  hosts: servers  # Replace with your inventory group or specific hosts
+  become: yes  # Use sudo if needed
+  tasks:
+    - name: Change permissions of the deployment script
+      ansible.builtin.file:
+        path: /tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/deploy_operator_contract.sh
+        mode: '0775'  # Set permissions to 775
+
+    - name: Run the deployment script
+      ansible.builtin.command: /tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/deploy_operator_contract.sh
+      register: deployment_result
+
+    - name: Display deployment output
+      ansible.builtin.debug:
+        var: deployment_result.stdout_lines
+
+    - name: Display any errors during deployment
+      ansible.builtin.debug:
+        var: deployment_result.stderr_lines
+      when: deployment_result.stderr | length > 0
+
+    - name: Check exit status of deployment script
+      ansible.builtin.fail:
+        msg: "Deployment script failed with exit code {{ deployment_result.rc }}"
+      when: deployment_result.rc != 0
