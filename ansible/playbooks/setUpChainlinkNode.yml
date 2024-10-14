@@ -24,7 +24,6 @@
         groups: docker
         append: yes
 
-    # Run the PostgreSQL container for Chainlink
     - name: Run Postgres container
       ansible.builtin.docker_container:
         name: cl-postgres
@@ -35,7 +34,6 @@
           - "5432:5432"
         state: started
 
-    # Create the Chainlink configuration directory and files
     - name: Create Chainlink config directory
       ansible.builtin.file:
         path: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible"
@@ -79,10 +77,9 @@
         dest: "{{ ansible_env.HOME }}/.chainlink-sepolia-ansible/.api"
         content: |
           test@gmail.com
-          {{ALCHEMYAPPAPIKEY}}
+          {{CHAINLINKNODEPASSWORD}}
         mode: '0600'
 
-    # if container exists ignore errors
     - name: Run Chainlink node Docker container with custom command
       ansible.builtin.shell: |
         sudo chmod 644 ~/.chainlink-sepolia-ansible/.api && \
@@ -99,3 +96,40 @@
           start -a /chainlink/.api
       become: yes
       ignore_errors: yes
+
+    # Get Chainlink authentication token
+    - name: Get Chainlink authentication token
+      ansible.builtin.uri:
+        url: http://localhost:6688/sessions
+        method: POST
+        body_format: json
+        body:
+          email: "test@gmail.com"
+          password: "{{CHAINLINKNODEPASSWORD}}"
+        return_content: yes
+        status_code: 200
+        headers:
+          Content-Type: "application/json"
+      register: auth_token_response
+
+    - name: Set auth token as a fact
+      ansible.builtin.set_fact:
+        chainlink_auth_token: "{{ auth_token_response.json.data.attributes.token }}"
+
+    # Fetch the wallet address using the API
+    - name: Get Chainlink node wallet address
+      ansible.builtin.uri:
+        url: http://localhost:6688/v2/keys/eth
+        method: GET
+        headers:
+          Authorization: "Bearer {{ chainlink_auth_token }}"
+        return_content: yes
+      register: wallet_address_response
+
+    - name: Store Chainlink wallet address
+      ansible.builtin.set_fact:
+        chainlink_wallet_address: "{{ wallet_address_response.json.data[0].attributes.address }}"
+
+    - name: Echo Chainlink wallet address
+      ansible.builtin.debug:
+        msg: "Chainlink Node Wallet Address: {{ chainlink_wallet_address }}"
