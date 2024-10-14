@@ -10,67 +10,56 @@
           - build-essential
         state: present
 
-    - name: Install NVM
+    - name: Install NVM and Node.js
       ansible.builtin.shell: |
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-      args:
-        creates: ~/.nvm
+        # Install NVM if not already installed
+        if [ ! -d "$HOME/.nvm" ]; then
+          echo "Installing NVM..."
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        fi
 
-    - name: Load NVM
-      ansible.builtin.shell: |
+        # Load NVM
         export NVM_DIR="$HOME/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-      register: nvm_load
-      changed_when: false  # No need to mark this task as changed
 
-    - name: Install Node.js 20.18.0
-      ansible.builtin.shell: |
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        nvm install 20.18.0  # Install specific version
+        # Install Node.js if not already installed
+        if ! command -v node &> /dev/null || [ "$(node --version | cut -d 'v' -f 2)" != "20.18.0" ]; then
+          echo "Installing Node.js 20.18.0..."
+          nvm install 20.18.0
+        fi
+
+        # Check if npm is installed
+        if ! command -v npm &> /dev/null; then
+          echo "Installing npm..."
+          apt-get update
+          apt-get install -y npm
+        fi
+
+        # Display Node.js and npm versions
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
       args:
-        executable: /bin/bash
+        executable: /bin/bash  # Ensure bash is used
 
-    - name: Ensure npm is installed
-      ansible.builtin.command: npm --version
-      register: npm_check
-      ignore_errors: yes
-
-    - name: Install npm if not installed
-      ansible.builtin.apt:
-        name: npm
-        state: present
-      when: npm_check.rc != 0  # Only install if npm isn't installed
-
-    - name: Check Node.js version
-      ansible.builtin.command: node --version
-      register: node_version
-
-    - name: Display Node.js version
-      ansible.builtin.debug:
-        msg: "Node.js version: {{ node_version.stdout }}"
+    - name: Install project dependencies
+      ansible.builtin.shell: |
+        # Change to the working directory
+        cd /tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm
         
-    - name: Install Hardhat
-      ansible.builtin.command: npm install --save-dev hardhat
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Install dotenv
-      ansible.builtin.command: npm install dotenv --save
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Install Hardhat Ethers
-      ansible.builtin.command: npm install --save-dev @nomiclabs/hardhat-ethers "ethers@^5.0.0"
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
-
-    - name: Install Chainlink contracts
-      ansible.builtin.command: npm install @chainlink/contracts
-      args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
+        # Install Hardhat, dotenv, Hardhat Ethers, and Chainlink contracts
+        echo "Installing project dependencies..."
+        npm install --save-dev hardhat dotenv @nomiclabs/hardhat-ethers "ethers@^5.0.0"
+        npm install @chainlink/contracts
 
     - name: Deploy the Operator contract
-      ansible.builtin.command: npx hardhat run deployments/deploy.js --network sepolia
+      ansible.builtin.shell: |
+        # Change to the working directory
+        cd /tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm
+
+        # Deploy the contract
+        echo "Deploying the Operator contract..."
+        npx hardhat run deployments/deploy.js --network sepolia
       args:
-        chdir: "/tmp/ChainlinkContractsAssets/ansible/playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm"
+        executable: /bin/bash  # Ensure bash is used
