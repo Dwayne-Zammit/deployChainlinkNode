@@ -20,42 +20,23 @@ async function main() {
   await contract.deployed();
   console.log("Contract deployed to:", contract.address);
 
-  // Store the contract address in the .env file
-  const envFilePath = ".env";
-  const newEnvVariable = `OPERATOR_CONTRACT_ADDRESS=${contract.address}\n`;
+  // Create a script to export the operator contract address
+  const exportScriptPath = "/tmp/set_operator_contract.sh";
+  const exportScriptContent = `#!/bin/bash
+export OPERATOR_CONTRACT_ADDRESS=${contract.address}
+echo "OPERATOR_CONTRACT_ADDRESS set to ${contract.address}"
+`;
 
-  // Read existing .env file
-  fs.readFile(envFilePath, "utf8", (err, data) => {
-    if (err) {
-      console.error("Error reading .env file:", err);
-      return;
-    }
+  fs.writeFileSync(exportScriptPath, exportScriptContent, { mode: 0o775 });
+  console.log(
+    `Created script to set OPERATOR_CONTRACT_ADDRESS: ${exportScriptPath}`
+  );
 
-    // Check if the variable already exists
-    if (data.includes("OPERATOR_CONTRACT_ADDRESS=")) {
-      // Replace the existing variable
-      const newData = data.replace(
-        /OPERATOR_CONTRACT_ADDRESS=.*/g,
-        newEnvVariable
-      );
-      fs.writeFile(envFilePath, newData, (err) => {
-        if (err) {
-          console.error("Error writing to .env file:", err);
-        } else {
-          console.log("Updated OPERATOR_CONTRACT_ADDRESS in .env file");
-        }
-      });
-    } else {
-      // Append the new variable
-      fs.appendFile(envFilePath, newEnvVariable, (err) => {
-        if (err) {
-          console.error("Error appending to .env file:", err);
-        } else {
-          console.log("Added OPERATOR_CONTRACT_ADDRESS to .env file");
-        }
-      });
-    }
-  });
+  // Inform the user how to source the script
+  console.log(
+    `Run the following command to set the variable in the current shell session:`
+  );
+  console.log(`source ${exportScriptPath}`);
 
   // Now proceed to whitelist the node in the same script
   const nodeAddress = process.env.CHAINLINK_NODE_ADDRESS; // Fetching from environment variables
