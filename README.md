@@ -53,3 +53,8 @@ One can import the following dashboard from the Grafana Marketplace to visualize
 1. **Node Exporter**: Exposes metrics about the server's performance.
 2. **Prometheus**: Collects the metrics exposed by the Node Exporter and triggers alerts based on predefined thresholds.
 3. **Grafana**: Visualizes the collected metrics and displays them in a user-friendly dashboard.
+
+
+### Contract Creation
+Due to the complexity of contracts for now it was decided to not automate the process. To create the contracts and ensure that the chainlink nodes 
+fulfil the requests, one has to follow the following documentation: https://docs.chain.link/chainlink-nodes/v1/fulfilling-requests
