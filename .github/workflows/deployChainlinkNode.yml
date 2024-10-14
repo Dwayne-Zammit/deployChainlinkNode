@@ -38,7 +38,7 @@ jobs:
           # substitute .env for operator contract
           sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
           sed -i 's/{{ADMINWALLETPRIVATEKEY}}/'"$ADMINWALLETPRIVATEKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
-          sed -i 's/{{ETHERSCANAPIKEY}}/'"$ETHERSCANAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.en
+          sed -i 's/{{ETHERSCANAPIKEY}}/'"$ETHERSCANAPIKEY"'/g' playbooks/deployContractsPlaybooks/operatorContract/assets/.deps/npm/.env
           
           # substitute .env for requestEthereumPrice contract
           sed -i 's/{{ALCHEMYAPPAPIKEY}}/'"$ALCHEMYAPPAPIKEY"'/g' playbooks/deployContractsPlaybooks/requestEthereumPriceContract/assets/.deps/npm/.env
