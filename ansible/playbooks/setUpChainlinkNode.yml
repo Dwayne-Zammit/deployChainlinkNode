@@ -98,41 +98,36 @@
       ignore_errors: yes
 
     - name: Wait for Chainlink container to become healthy
-      ansible.builtin.shell: |
-        for i in {1..8}; do
-          response=$(curl --silent --write-out "%{http_code}" --output /dev/null http://localhost:6688)
-          if [ "$response" = "200" ]; then
-            echo "Chainlink service is healthy (HTTP 200)"
-            exit 0
-          else
-            echo "Waiting for Chainlink service to become healthy... (HTTP status: $response)"
-            sleep 5
-          fi
-        done
-        echo "Chainlink service did not become healthy in time"
-        exit 1
-      become: yes
-      register: chainlink_health_check
-      failed_when: chainlink_health_check.rc != 0
+      ansible.builtin.wait_for:
+        port: 6688
+        delay: 10
+        timeout: 40
+        state: started
  
-    # Get Chainlink authentication token
-    - name: Get Chainlink authentication token
+    # Get Chainlink authentication session
+    - name: Get Chainlink authentication session
       ansible.builtin.uri:
         url: http://localhost:6688/sessions
         method: POST
         body_format: json
         body:
-          email: "test-api@gmail.com"
-          password: "{{CHAINLINKNODEPASSWORD}}"
+          email: "test@gmail.com"
+          password: "{{ CHAINLINKNODEPASSWORD }}"
         return_content: yes
         status_code: 200
         headers:
           Content-Type: "application/json"
-      register: auth_token_response
+      register: auth_response
 
+    # Debug the authentication response
+    - name: Debug authentication response
+      ansible.builtin.debug:
+        var: auth_response
+
+    # Set auth token as a fact
     - name: Set auth token as a fact
       ansible.builtin.set_fact:
-        chainlink_auth_token: "{{ auth_token_response.json.data.attributes.token }}"
+        chainlink_auth_token: "{{ auth_response.json.data.attributes.token }}"
 
     # Fetch the wallet address using the API
     - name: Get Chainlink node wallet address
@@ -144,10 +139,17 @@
         return_content: yes
       register: wallet_address_response
 
+    # Debug the wallet address response
+    - name: Debug wallet address response
+      ansible.builtin.debug:
+        var: wallet_address_response
+
+    # Store Chainlink wallet address
     - name: Store Chainlink wallet address
       ansible.builtin.set_fact:
         chainlink_wallet_address: "{{ wallet_address_response.json.data[0].attributes.address }}"
 
+    # Echo Chainlink wallet address
     - name: Echo Chainlink wallet address
       ansible.builtin.debug:
         msg: "Chainlink Node Wallet Address: {{ chainlink_wallet_address }}"
